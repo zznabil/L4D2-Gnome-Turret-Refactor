@@ -22,6 +22,36 @@ This document provides a comprehensive technical overview of the `turret.nut` sc
 
 The script's operation can be understood as a chronological lifecycle with three distinct stages. Breaking this chain at any point will break the entire mod.
 
+```mermaid
+graph TD
+    A["Stage 1: Setup Phase (Map Load)"] --> B(OnGameplayStart_PostSpawn Triggered);
+    B --> C{Find all weapon_gnome entities};
+    C -- For each gnome --> D[Create New Gnome];
+    D --> E["Attach Script Scope (ammo, damage, etc.)"];
+    E --> F[Destroy Original Gnome];
+    F --> G["Stage 2: Deployment Phase (Player Action)"];
+    G --> H(Player with Upgraded Gnome Presses Fire);
+    H --> I{OnAttackPress Listener Calls PlaceTurret};
+    I --> J[TraceLine for Valid Position];
+    J --> K["Create Turret Model (prop_dynamic)"];
+    K --> L["Create Turret Brain (info_target)"];
+    L --> M[Transfer Gnome's Script Scope to Turret Brain];
+    M --> N[Remove Gnome from Player];
+    N --> O["Stage 3: Active Phase (Turret Operation)"];
+    O --> P["Turret_Think (Global Function)"];
+    P -- Loops through all active turrets --> Q["For Each Turret: State Management"];
+    Q --> R{Has Target?};
+    R -- No --> S[Acquire Target];
+    R -- Yes --> T{Target Valid & LoS?};
+    S --> T;
+    T -- Yes --> U[Fire];
+    T -- No --> Q;
+    U --> V{Out of Ammo?};
+    V -- Yes --> W[Become Inactive];
+    V -- No --> Q;
+    W --> Q;
+```
+
 ### Stage 1: The Setup Phase (Map Load)
 
 This phase happens automatically when a map loads. Its goal is to find every gnome on the map and "upgrade" it from a simple prop into a smart, deployable item.
@@ -58,11 +88,46 @@ This is the main operational loop of a deployed turret.
     *   **Is it out of ammo?** If yes, it becomes inactive.
     *   **Is it idle?** If yes, it returns to its default angle.
 
+    ```mermaid
+    stateDiagram-v2
+        [*] --> Idle : No Target / Target Lost
+        Idle --> Searching : No Current Target
+        Searching --> Targeting : Target Found
+        Targeting --> Firing : Target Valid & LoS & In Range
+        Targeting --> Idle : Target Lost or Invalid
+        Firing --> Idle : Target Lost or Invalid
+        Firing --> Empty : Out of Ammo
+        Firing --> Targeting : Target Still Valid (Re-evaluate)
+        Empty --> [*] : Turret Inactive
+    ```
+
 ---
 
 ## Performance Enhancements
 
 The final script is significantly more performant than the original blueprint. This was achieved with two surgical optimizations.
+
+```mermaid
+graph TD
+    subgraph Before Optimization
+        direction LR
+        A1["Turret_Think (Per Frame)"] --> B1{For Each Turret};
+        B1 --> C1["Scan ALL Entities for Target (Expensive)"];
+        C1 --> D1[Process Target];
+    end
+
+    subgraph After Optimization
+        direction LR
+        A2["Turret_Think (Throttled: ~4Hz)"] --> B2{For Each Turret};
+        B2 --> C2{Has Valid Target?};
+        C2 -- No --> D2["Scan ALL Entities for Target (Expensive)"];
+        C2 -- Yes --> E2["Use Existing Target (Cheap)"];
+        D2 --> E2;
+        E2 --> F2[Process Target];
+    end
+    Before_Optimization_Label["Original: High CPU Load"] --> Before Optimization;
+    After_Optimization_Label["Optimized: Low CPU Load"] --> After Optimization;
+```
 
 ### The Inefficient "Before" State
 

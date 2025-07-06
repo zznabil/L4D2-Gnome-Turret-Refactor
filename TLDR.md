@@ -19,11 +19,11 @@ The script was made significantly more performant by:
 
 ```mermaid
 graph TD
-    A[Original Turret Logic (backup.turret.nut)] -- Every Server Tick --> B{Scan for Target?};
+    A["Original Turret Logic (backup.turret.nut)"] -- Every Server Tick --> B{Scan for Target?};
     B -- Always --> C[Expensive Full Environment Scan];
     C --> D{Fire?};
 
-    E[Optimized Turret Logic (production.turret.nut)] -- Throttled Timer (0.25s) --> F{Has Valid Target?};
+    E["Optimized Turret Logic (production.turret.nut)"] -- Throttled Timer (0.25s) --> F{Has Valid Target?};
     F -- No --> G[Expensive Full Environment Scan];
     F -- Yes --> H[Cheaper Line-of-Sight Check];
     G --> H;

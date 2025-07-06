@@ -125,8 +125,8 @@ graph TD
         D2 --> E2;
         E2 --> F2[Process Target];
     end
-    Before_Optimization_Label["Original: High CPU Load"] --> Before Optimization;
-    After_Optimization_Label["Optimized: Low CPU Load"] --> After Optimization;
+    Before_Optimization_Label["Original: High CPU Load"] --> A1;
+    After_Optimization_Label["Optimized: Low CPU Load"] --> A2;
 ```
 
 ### The Inefficient "Before" State

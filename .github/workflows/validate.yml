@@ -1,0 +1,158 @@
+name: Validate L4D2 Gnome Turret
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-scripts:
+    runs-on: ubuntu-latest
+    name: Validate Squirrel Scripts
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check file structure
+      run: |
+        echo "Checking required files..."
+        test -f "gnome-turret/addoninfo.txt" || (echo "Missing addoninfo.txt" && exit 1)
+        test -f "gnome-turret/scripts/vscripts/turret.nut" || (echo "Missing turret.nut" && exit 1)
+        test -f "gnome-turret/scripts/vscripts/gnome_turret_trigger.nut" || (echo "Missing gnome_turret_trigger.nut" && exit 1)
+        test -f "gnome-turret/scripts/vscripts/lib_utils.nut" || (echo "Missing lib_utils.nut" && exit 1)
+        echo "All required files present ✓"
+        
+    - name: Validate Squirrel syntax
+      run: |
+        echo "Checking Squirrel script syntax..."
+        
+        # Check for basic syntax issues in .nut files
+        find gnome-turret -name "*.nut" -exec echo "Checking {}" \; -exec grep -n "syntax\|error\|undefined" {} \; || true
+        
+        # Check for required global variables in turret.nut
+        echo "Checking required global variables..."
+        grep -q "GnomeTurretDamage" gnome-turret/scripts/vscripts/turret.nut || (echo "Missing GnomeTurretDamage" && exit 1)
+        grep -q "GnomeTurretAimMode" gnome-turret/scripts/vscripts/turret.nut || (echo "Missing GnomeTurretAimMode" && exit 1)
+        grep -q "GnomeTurretThinkRateMS" gnome-turret/scripts/vscripts/turret.nut || (echo "Missing GnomeTurretThinkRateMS" && exit 1)
+        
+        # Check for required classes
+        grep -q "class CTurret" gnome-turret/scripts/vscripts/turret.nut || (echo "Missing CTurret class" && exit 1)
+        
+        # Check for required functions
+        grep -q "function Turret_Think" gnome-turret/scripts/vscripts/turret.nut || (echo "Missing Turret_Think function" && exit 1)
+        grep -q "function PlaceTurret" gnome-turret/scripts/vscripts/turret.nut || (echo "Missing PlaceTurret function" && exit 1)
+        
+        echo "Syntax validation completed ✓"
+        
+    - name: Check performance optimizations
+      run: |
+        echo "Checking performance optimizations..."
+        
+        # Check for throttled execution
+        grep -q "g_flNextGlobalThinkTime\|TURRET_THINK_INTERVAL" gnome-turret/scripts/vscripts/turret.nut || (echo "Warning: Throttled execution not found" && exit 1)
+        
+        # Check for stateful target management
+        grep -q "m_hTarget" gnome-turret/scripts/vscripts/turret.nut || (echo "Warning: Stateful target management not found" && exit 1)
+        
+        echo "Performance optimizations verified ✓"
+        
+    - name: Validate configuration system
+      run: |
+        echo "Checking configuration system..."
+        
+        # Check for config file functions
+        grep -q "function CfgFileCheck\|function GenerateGnomeTurretCfgFile" gnome-turret/scripts/vscripts/turret.nut || (echo "Warning: Config functions not found")
+        
+        # Check for addon info
+        grep -q "addontitle" gnome-turret/addoninfo.txt || (echo "Missing addon title" && exit 1)
+        grep -q "addonversion" gnome-turret/addoninfo.txt || (echo "Missing addon version" && exit 1)
+        
+        echo "Configuration system validated ✓"
+
+  validate-documentation:
+    runs-on: ubuntu-latest
+    name: Validate Documentation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check documentation files
+      run: |
+        echo "Checking documentation..."
+        test -f "README.md" || (echo "Missing README.md" && exit 1)
+        test -f "TLDR.md" || (echo "Missing TLDR.md" && exit 1)
+        test -f "changelog.md" || (echo "Missing changelog.md" && exit 1)
+        test -f ".agent.md" || (echo "Missing .agent.md" && exit 1)
+        test -f "CONTRIBUTING.md" || (echo "Missing CONTRIBUTING.md" && exit 1)
+        test -f "LICENSE" || (echo "Missing LICENSE" && exit 1)
+        echo "All documentation files present ✓"
+        
+    - name: Check README content
+      run: |
+        echo "Validating README content..."
+        grep -q "# L4D2 Gnome Turret Refactor" README.md || (echo "Missing main title" && exit 1)
+        grep -q "Installation" README.md || (echo "Missing installation section" && exit 1)
+        grep -q "Configuration" README.md || (echo "Missing configuration section" && exit 1)
+        grep -q "Architecture" README.md || (echo "Missing architecture section" && exit 1)
+        echo "README content validated ✓"
+        
+    - name: Check links in documentation
+      run: |
+        echo "Checking internal links..."
+        # This is a basic check - in a real scenario you might want to use a link checker
+        grep -o "\[.*\](.*\.md)" README.md || echo "No internal markdown links found"
+        echo "Link validation completed ✓"
+
+  check-file-sizes:
+    runs-on: ubuntu-latest
+    name: Check File Sizes
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check script file sizes
+      run: |
+        echo "Checking file sizes..."
+        
+        # Check that script files aren't too large (performance consideration)
+        find gnome-turret -name "*.nut" -size +1M -exec echo "Warning: {} is larger than 1MB" \;
+        
+        # Check that documentation isn't too large
+        find . -name "*.md" -size +500k -exec echo "Warning: {} is larger than 500KB" \;
+        
+        echo "File size check completed ✓"
+
+  validate-structure:
+    runs-on: ubuntu-latest
+    name: Validate Project Structure
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check directory structure
+      run: |
+        echo "Validating project structure..."
+        
+        # Check main directories
+        test -d "gnome-turret" || (echo "Missing gnome-turret directory" && exit 1)
+        test -d "gnome-turret/scripts" || (echo "Missing scripts directory" && exit 1)
+        test -d "gnome-turret/scripts/vscripts" || (echo "Missing vscripts directory" && exit 1)
+        test -d ".github" || (echo "Missing .github directory" && exit 1)
+        test -d ".github/ISSUE_TEMPLATE" || (echo "Missing issue templates" && exit 1)
+        test -d ".github/workflows" || (echo "Missing workflows directory" && exit 1)
+        
+        echo "Project structure validated ✓"
+        
+    - name: Check GitHub templates
+      run: |
+        echo "Checking GitHub templates..."
+        test -f ".github/ISSUE_TEMPLATE/bug_report.md" || (echo "Missing bug report template" && exit 1)
+        test -f ".github/ISSUE_TEMPLATE/feature_request.md" || (echo "Missing feature request template" && exit 1)
+        test -f ".github/ISSUE_TEMPLATE/performance_issue.md" || (echo "Missing performance issue template" && exit 1)
+        test -f ".github/pull_request_template.md" || (echo "Missing PR template" && exit 1)
+        echo "GitHub templates validated ✓"

@@ -96,6 +96,7 @@ function GenerateGnomeTurretCfgFile()
 		".",
 		"// ====== TURRET LIMITS ======",
 		"GnomeTurretMaxCount " + GnomeTurretMaxCount,
+		"g_iMaxTurretsPerTarget " + g_iMaxTurretsPerTarget,
 		".",
 		"// ====== FEATURE TOGGLES ======",
 		// "GnomeTurretDemolitionMode " + GnomeTurretDemolitionMode, // DISABLED - Demolition removed
@@ -115,7 +116,8 @@ function GenerateGnomeTurretCfgFile()
 		"//GnomeTurretFireRateMS= Turret fire rate in milliseconds (75-250ms, default 75)",
 		"//GnomeTurretAimMode= 0=Aimbot (instant), 1=Realistic (default)",
 		"//GnomeTurretRotationSpeed= Rotation speed for realistic aiming (default 50)",
-		"//GnomeTurretMaxCount= Maximum turrets per player (default 8)",
+		"//GnomeTurretMaxCount= Maximum turrets server-wide (default 8, configurable 1-50)",
+		"//g_iMaxTurretsPerTarget= Max turrets per target for performance (default 2, range 1-" + GnomeTurretMaxCount + ")",
 		// "//GnomeTurretDemolitionMode= 0=Off, 1=On (default)", // DISABLED - Demolition removed
 		"//GnomeTurretExplosiveMode= 0=Off (default), 1=On",
 		"//GnomeTurretFireEnabled= 0=Disable firing, 1=Enable firing (default)",
@@ -225,19 +227,19 @@ GnomeTurretBill = 0;
 	GnomeTurretLouis = 0;
 	GnomeTurretFrancis = 0;
 	GnomeTurretZoey = 0;
-	
+
 	GnomeTurretAmmoNick = 0;
 	GnomeTurretAmmoCoach = 0;
 	GnomeTurretAmmoEllis = 0;
 	GnomeTurretAmmoRochelle = 0;
 	GnomeTurretAmmoBill = 0;
-	GnomeTurretAmmoLouis = 0;
+GnomeTurretAmmoLouis = 0;
 	GnomeTurretAmmoFrancis = 0;
 	GnomeTurretAmmoZoey = 0;
 	
 	local CfgToggleFile =
 	[
-		"GnomeTurretNick 0",
+	"GnomeTurretNick 0",
 		"GnomeTurretCoach 0",
 		"GnomeTurretEllis 0",
 		"GnomeTurretRochelle 0",
@@ -248,7 +250,7 @@ GnomeTurretBill = 0;
 		".",
 		"GnomeTurretAmmoNick 0",
 		"GnomeTurretAmmoCoach 0",
-		"GnomeTurretAmmoEllis 0",
+	"GnomeTurretAmmoEllis 0",
 		"GnomeTurretAmmoRochelle 0",
 		"GnomeTurretAmmoBill 0",
 		"GnomeTurretAmmoLouis 0",
@@ -256,12 +258,12 @@ GnomeTurretBill = 0;
 		"GnomeTurretAmmoZoey 0",
 		".",
 		".",
-		"// =================================",
+	"// =================================",
 		"//Notes: This file is just for virtual inventory to save data in game.",
 		"."
 		
 	]
-	
+
 	foreach (line in CfgToggleFile)
 	{
 		DefaultToggleFile = DefaultToggleFile + line + "\n";
@@ -269,21 +271,21 @@ GnomeTurretBill = 0;
 	if(!CfgFileCheck("gnome turret/virtual inventory/gnome virtual inventory.txt"))
 	{
 		
-		StringToFile("gnome turret/virtual inventory/gnome virtual inventory.txt", DefaultToggleFile);
+	StringToFile("gnome turret/virtual inventory/gnome virtual inventory.txt", DefaultToggleFile);
 		printl("The 'gnome virtual inventory.txt' file can't be found. Generating a new 'gnome virtual inventory.txt' file...");
 		
-	}
+}
 	if(CfgFileCheck("gnome turret/virtual inventory/gnome virtual inventory.txt"))
 	{
 		
 		StringToFile("gnome turret/virtual inventory/gnome virtual inventory.txt", DefaultToggleFile);
 		
-	}
+}
 	
 }
 function LoadSpecificConfigFile(filename)
 {
-	local trigger = 0;
+local trigger = 0;
 	local files = FileToString(filename);
 	if(!files)
 	{
@@ -312,7 +314,7 @@ function LoadSpecificConfigFile(filename)
 			// {
 			//		DemolitionShot = togglevalue.tointeger();
 			//		
-			// }
+		// }
 				if(togglecommand == "GnomeTurretDamage")
 				{
 					if(togglevalue.tofloat() <= 1)
@@ -355,9 +357,19 @@ function LoadSpecificConfigFile(filename)
 					GnomeTurretRotationSpeed = togglevalue.tofloat();
 				}
 				if(togglecommand == "GnomeTurretMaxCount")
-				{
-					GnomeTurretMaxCount = togglevalue.tointeger();
-				}
+			{
+				local iOldValue = GnomeTurretMaxCount;
+				GnomeTurretMaxCount = togglevalue.tointeger();
+				printl("[CONFIG] Set GnomeTurretMaxCount from " + iOldValue + " to " + GnomeTurretMaxCount);
+			}
+			if(togglecommand == "g_iMaxTurretsPerTarget")
+			{
+				local iOldValue = g_iMaxTurretsPerTarget;
+				g_iMaxTurretsPerTarget = togglevalue.tointeger();
+				if (g_iMaxTurretsPerTarget < 1) g_iMaxTurretsPerTarget = 1;
+				if (g_iMaxTurretsPerTarget > GnomeTurretMaxCount) g_iMaxTurretsPerTarget = GnomeTurretMaxCount;
+				printl("[CONFIG] Set g_iMaxTurretsPerTarget from " + iOldValue + " to " + g_iMaxTurretsPerTarget);
+			}
 				// DISABLED - Demolition mode removed
 			// if(togglecommand == "GnomeTurretDemolitionMode")
 			// {

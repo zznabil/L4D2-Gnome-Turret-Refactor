@@ -4,16 +4,16 @@ GnomeTurretDamage <- 50
 GnomeTurretAmmoBase <- 1000
 g_flLastConfigCheck <- 0.0;
 
-// -- PERFORMANCE SETTINGS --
-GnomeTurretThinkRateMS <- 100
-GnomeTurretFireRateMS <- 100
+// -- PERFORMANCE SETTINGS (OPTIMIZED FOR STABILITY) --
+GnomeTurretThinkRateMS <- 150  // Increased from 100ms to reduce CPU load
+GnomeTurretFireRateMS <- 120   // Increased from 100ms to reduce entity spam
 
 // -- AIMING SYSTEM --
 GnomeTurretAimMode <- 1
-GnomeTurretRotationSpeed <- 160.0
+GnomeTurretRotationSpeed <- 100.0
 
-// -- TURRET LIMITS --
-GnomeTurretMaxCount <- 8
+// -- TURRET LIMITS (REDUCED FOR STABILITY) --
+GnomeTurretMaxCount <- 4  // Reduced from 8 to prevent entity overflow
 
 // -- FEATURE TOGGLES --
 // GnomeTurretDemolitionMode <- 0 // DISABLED - Demolition mode removed
@@ -144,28 +144,19 @@ enum eTurret
 	IdleTime = 3.0
 	ShootTime = 0.1 //0.2
 	// Scanning animation settings
-	ScanSpeed = 25.0 // degrees per second (increased for faster scanning)
+	ScanSpeed = 15.0 // degrees per second (increased for faster scanning)
 	ScanRange = 90.0 // total scan range in degrees (reduced from 120)
 	ScanPauseTime = 1.0 // pause time at each end of scan (reduced for faster scanning)
 	ShootSound = "weapons/50cal/50cal_shoot.wav"
 	Shell = "weapon_shell_casing_50cal"
 	MuzzleFlash = "weapon_muzzle_flash_autoshotgun"
 	SmokeTrail = "weapon_muzzle_smoke_b"  // Smoke trail effect after each shot
-	BulletTracer = "weapon_tracers_incendiary_streak"  // Fixed bullet tracer effect
-	// HeavySmoke = "smoke_medium_01"  // Intense smoke effect (disabled for testing)
-	// Sparks = "barrel_fly_embers"  // Sparks from barrel (disabled for testing)
-	// BarrelHeat = "fire_jet_01_flame"  // Additional intense muzzle flash (disabled for testing)
-	// GunpowderSmoke = "fire_small_02"  // Dense gunpowder smoke (disabled for testing)
-	ExtraSmoke = "weapon_muzzle_smoke"  // Additional weapon smoke
-	// New enhanced effects from particle list
-	// MuzzleFlash50Cal = "weapon_muzzle_flash_50cal"  // Heavy 50cal muzzle flash (disabled for testing)
-	// MuzzleFlashMinigun = "weapon_muzzle_flash_minigun"  // Minigun style flash (disabled for testing)
-	// MuzzleFlashSparks = "weapon_muzzle_flash_sparks"  // Muzzle sparks (disabled for testing)
-	MuzzleFlashSparks2 = "weapon_muzzle_flash_sparks2"  // Additional sparks
-	MuzzleSmokeLong = "weapon_muzzle_smoke_long"  // Long lasting smoke
-	MuzzleSmokeLongB = "weapon_muzzle_smoke_long_b"  // Alternative long smoke
-	MuzzleFlashSmokeSmall = "weapon_muzzle_flash_smoke_small"  // Small smoke puffs
-	MuzzleFlashSmokeSmall2 = "weapon_muzzle_flash_smoke_small2"  // More small smoke
+	MuzzleSmokeLong = "weapon_muzzle_smoke_long"  // Long muzzle smoke effect
+	MuzzleSmokeLongB = "weapon_muzzle_smoke_long_b"  // Long muzzle smoke B effect
+	MuzzleSmoke = "weapon_muzzle_smoke"  // Standard muzzle smoke effect
+	BulletTracer = "weapon_tracers_incendiary"  // Fixed bullet tracer effect
+	LaserSight = "weapon_tracers_explosive"  // Laser sight effect
+	// Removed unused VFX constants for optimization - only keeping essential effects
 	ImpactDefault = "blood_gib_1"
 	ImpactIncendiary = "impact_incendiary_generic"
 	ImpactExplosive = "impact_explosive_ammo_small"
@@ -189,11 +180,20 @@ explosion_entity <-
 // DemolitionShot <- 1 // DISABLED - Demolition mode removed
 ExplosionAmmoToggle <- 0
 ExplosionEntity <- SpawnEntityFromTable("env_explosion", explosion_entity);
+// Global explosion cooldown to prevent entity overflow crashes
+g_flLastExplosionTime <- 0.0;
+g_flExplosionCooldown <- 0.5; // Minimum 0.5 seconds between any explosions
 g_bDebugMode <- false;
 g_flFindPotentialTargetsTime <- 0.0;
 
 g_aPotentialTargets <- [];
 g_aTurretList <- [];
+
+// Shared targeting cache for performance optimization
+g_aTargetCache <- [];
+g_flTargetCacheTime <- 0.0;
+g_flTargetCacheInterval <- 0.05; // Cache targets for 50ms
+g_iMaxTurretsPerTarget <- 1; // Reduced from 2 to 1 to prevent entity overflow
 
 // Helper function to check if debug messages should be displayed (rate limited)
 function ShouldShowDebugMessage()
@@ -245,7 +245,7 @@ function UpdateTurretScanningAnimation(turret)
 	while (yawDiff < -180.0) yawDiff += 360.0;
 
 	// Apply smooth interpolation (reduced speed for smoother movement)
-	local interpolationSpeed = 0.15; // Increased for faster movement
+	local interpolationSpeed = 0.10; // Increased for faster movement
 	local newYaw = currentYaw + (yawDiff * interpolationSpeed);
 
 	// Apply the scanning rotation
@@ -470,7 +470,7 @@ function PlaceTurret(hPlayer, hWeapon)
 {
 	if (!hPlayer.IsDead() && !hPlayer.IsIncapacitated())
 	{
-		// Check server-wide turret count limit (8 total across all players)
+		// Check server-wide turret count limit (configurable via GnomeTurretMaxCount)
 		local iTotalTurretCount = g_aTurretList.len();
 		if (iTotalTurretCount >= GnomeTurretMaxCount)
 		{
@@ -582,7 +582,7 @@ function PlaceTurret(hPlayer, hWeapon)
 		newTurret.m_flScanDirection = 1.0;
 		newTurret.m_eScanStartAngles = eAngles;
 		newTurret.m_flScanRange = eTurret.ScanRange;
-		if (g_aTurretList.len() < 8) {
+		if (g_aTurretList.len() < GnomeTurretMaxCount) {
 			g_aTurretList.push(newTurret);
 			// Apply current config settings to the newly created turret
 			ApplyConfigToNewTurret(newTurret);
@@ -592,7 +592,7 @@ function PlaceTurret(hPlayer, hWeapon)
 			if (hMachineGun.IsValid()) hMachineGun.Kill();
 			if (hTracerEntity.IsValid()) hTracerEntity.Kill();
 			if (hLaserSight && hLaserSight.IsValid()) hLaserSight.Kill();
-			ShowSpecialHint(hPlayer, "Server turret limit of 8 reached!", ForbiddenIcon, 0.1, 3);
+			ShowSpecialHint(hPlayer, "Server turret limit of " + GnomeTurretMaxCount + " reached!", ForbiddenIcon, 0.1, 3);
 		}
 
 		if (hWeapon.GetClassname() == eTurret.Weapon) hWeapon.Kill();
@@ -1025,102 +1025,52 @@ function ShowDetailedDebugInfo(hPlayer)
 
 function TurretShoot(hMachineGun, targetPosition = null)
 {
-	local hShell = SpawnEntityFromTable("info_particle_system", {
-		effect_name = eTurret.Shell
-		start_active = 1
-	});
+	// HEAVILY OPTIMIZED VFX - minimal particle effects to prevent crashes
+	// Only create essential effects to avoid cutlrbtree overflow
+	local vecPos = hMachineGun.GetOrigin() + hMachineGun.GetAngles().Up() * 4 + hMachineGun.GetAngles().Forward() * 38;
+	
+	// Create only muzzle flash - most essential visual effect
 	local hShootFire = SpawnEntityFromTable("info_particle_system", {
 		effect_name = eTurret.MuzzleFlash
 		angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
+		origin = vecPos
 		start_active = 1
 	});
-	// Create smoke trail effect
-	local hSmokeTrail = SpawnEntityFromTable("info_particle_system", {
-		effect_name = eTurret.SmokeTrail
-		angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-		start_active = 1
-	});
-	// Create heavy smoke effect
-	// local hHeavySmoke = SpawnEntityFromTable("info_particle_system", {
-	//	effect_name = eTurret.HeavySmoke
-	//	angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-	//	start_active = 1
-	// });  // Heavy smoke effect (disabled for testing)
-	// Create sparks effect (disabled for testing)
-	// local hSparks = SpawnEntityFromTable("info_particle_system", {
-	//	effect_name = eTurret.Sparks
-	//	angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-	//	start_active = 1
-	// });
-	// Create barrel heat effect (disabled for testing)
-	// local hBarrelHeat = SpawnEntityFromTable("info_particle_system", {
-	//	effect_name = eTurret.BarrelHeat
-	//	angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-	//	start_active = 1
-	// });
-	// Create gunpowder smoke effect (disabled for testing)
-	// local hGunpowderSmoke = SpawnEntityFromTable("info_particle_system", {
-	//	effect_name = eTurret.GunpowderSmoke
-	//	angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-	//	start_active = 1
-	// });
-	// Create extra smoke effect
-	local hExtraSmoke = SpawnEntityFromTable("info_particle_system", {
-		effect_name = eTurret.ExtraSmoke
-		angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-		start_active = 1
-	});
-	// Create enhanced muzzle effects
-	// local hMuzzleFlash50Cal = SpawnEntityFromTable("info_particle_system", {
-	//	effect_name = eTurret.MuzzleFlash50Cal
-	//	angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-	//	start_active = 1
-	// });  // Heavy 50cal muzzle flash (disabled for testing)
-	// local hMuzzleFlashMinigun = SpawnEntityFromTable("info_particle_system", {
-	//	effect_name = eTurret.MuzzleFlashMinigun
-	//	angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-	//	start_active = 1
-	// });  // Minigun style flash (disabled for testing)
-	// local hMuzzleFlashSparks = SpawnEntityFromTable("info_particle_system", {
-	//	effect_name = eTurret.MuzzleFlashSparks
-	//	angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-	//	start_active = 1
-	// });  // Muzzle sparks (disabled for testing)
-	local hMuzzleSmokeLong = SpawnEntityFromTable("info_particle_system", {
-		effect_name = eTurret.MuzzleSmokeLong
-		angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-		start_active = 1
-	});
-	local hMuzzleFlashSmokeSmall = SpawnEntityFromTable("info_particle_system", {
-		effect_name = eTurret.MuzzleFlashSmokeSmall
-		angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-		start_active = 1
-	});
-	// Create dynamic muzzle flash light
-	local hMuzzleLight = SpawnEntityFromTable("light_dynamic", {
-		_light = "255 200 100 200"  // Bright orange-yellow light
-		brightness = 3
-		distance = 150
-		style = 0  // Normal light
-		spawnflags = 1  // Start on
-	});
-	local vecPos = hMachineGun.GetOrigin() + hMachineGun.GetAngles().Up() * 4 + hMachineGun.GetAngles().Forward() * 38;
-
-	// Create bullet tracer effect if target position is provided
+	
+	// Create minimal smoke effect only every 3rd shot to reduce entity spam
+	local hSmokeTrail = null;
+	if (RandomInt(1, 3) == 1) {
+		hSmokeTrail = SpawnEntityFromTable("info_particle_system", {
+			effect_name = eTurret.SmokeTrail
+			angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
+			origin = vecPos
+			start_active = 1
+		});
+	}
+	
+	// Create bullet tracer and laser sight with proper targeting
 	local hBulletTracer = null;
-	if (targetPosition != null)
+	local hLaserSight = null;
+	if (targetPosition != null && RandomInt(1, 2) == 1)
 	{
-		// Create a unique target name for the tracer end point
+		// Create unique target names for control points
 		local targetName = "tracer_target_" + RandomInt(1000, 9999) + "_" + Time().tointeger();
+		local laserTargetName = "laser_target_" + RandomInt(1000, 9999) + "_" + Time().tointeger();
 
-		// Create a target entity for the tracer end point
+		// Create target entities for proper aiming
 		local hTracerTarget = SpawnEntityFromTable("info_target", {
 			targetname = targetName
 			origin = targetPosition
 			spawnflags = 1  // Transmit to client
 		});
 
-		// Create the bullet tracer with proper control points
+		local hLaserTarget = SpawnEntityFromTable("info_target", {
+			targetname = laserTargetName
+			origin = targetPosition
+			spawnflags = 1  // Transmit to client
+		});
+
+		// Create bullet tracer with proper control point
 		hBulletTracer = SpawnEntityFromTable("info_particle_system", {
 			effect_name = eTurret.BulletTracer
 			origin = vecPos
@@ -1128,40 +1078,26 @@ function TurretShoot(hMachineGun, targetPosition = null)
 			start_active = 1
 		});
 
-		// Schedule target entity for cleanup
-		AcceptEntityInput(hTracerTarget, "Kill", "", 0.4);
+		// Create laser sight with proper control point
+		hLaserSight = SpawnEntityFromTable("info_particle_system", {
+			effect_name = eTurret.LaserSight
+			origin = vecPos
+			cpoint1 = laserTargetName  // Link to laser target entity by name
+			start_active = 1
+		});
+
+		// Schedule target entities for cleanup
+		AcceptEntityInput(hTracerTarget, "Kill", "", 0.15);
+		AcceptEntityInput(hLaserTarget, "Kill", "", 0.15);
 	}
 
-	CEntity(hMachineGun).AttachEntity(hShell, "Shell");
-	hShootFire.SetOrigin(vecPos);
-	hSmokeTrail.SetOrigin(vecPos);
-	// hHeavySmoke.SetOrigin(vecPos);  // Heavy smoke origin (disabled for testing)
-	// hSparks.SetOrigin(vecPos);  // Disabled for testing
-	// hBarrelHeat.SetOrigin(vecPos);  // Barrel heat origin (disabled for testing)
-	// hGunpowderSmoke.SetOrigin(vecPos);  // Gunpowder smoke origin (disabled for testing)
-	hExtraSmoke.SetOrigin(vecPos);
-	// hMuzzleFlash50Cal.SetOrigin(vecPos);  // Heavy 50cal flash origin (disabled for testing)
-	// hMuzzleFlashMinigun.SetOrigin(vecPos);  // Minigun flash origin (disabled for testing)
-	// hMuzzleFlashSparks.SetOrigin(vecPos);  // Muzzle sparks origin (disabled for testing)
-	hMuzzleSmokeLong.SetOrigin(vecPos);
-	hMuzzleFlashSmokeSmall.SetOrigin(vecPos);
-	hMuzzleLight.SetOrigin(vecPos);
-	AcceptEntityInput(hShell, "Kill", "", 0.05);
-	AcceptEntityInput(hShootFire, "Kill", "", 0.05);
-	AcceptEntityInput(hSmokeTrail, "Kill", "", 1.5);  // Smoke lasts longer than muzzle flash
-	// AcceptEntityInput(hHeavySmoke, "Kill", "", 2.5);  // Heavy smoke lasts even longer (disabled for testing)
-	// AcceptEntityInput(hSparks, "Kill", "", 0.3);  // Sparks last briefly (disabled for testing)
-	// AcceptEntityInput(hBarrelHeat, "Kill", "", 0.1);  // Barrel heat flash is quick (disabled for testing)
-	// AcceptEntityInput(hGunpowderSmoke, "Kill", "", 2.0);  // Gunpowder smoke lingers (disabled for testing)
-	AcceptEntityInput(hExtraSmoke, "Kill", "", 1.8);  // Extra smoke effect
-	// AcceptEntityInput(hMuzzleFlash50Cal, "Kill", "", 0.08);  // Heavy 50cal flash (disabled for testing)
-	// AcceptEntityInput(hMuzzleFlashMinigun, "Kill", "", 0.06);  // Minigun flash (disabled for testing)
-	// AcceptEntityInput(hMuzzleFlashSparks, "Kill", "", 0.4);  // Muzzle sparks (disabled for testing)
-	AcceptEntityInput(hMuzzleSmokeLong, "Kill", "", 3.0);  // Long lasting smoke
-	AcceptEntityInput(hMuzzleFlashSmokeSmall, "Kill", "", 1.2);  // Small smoke puffs
-	AcceptEntityInput(hMuzzleLight, "Kill", "", 0.05);  // Same duration as muzzle flash
-	if (hBulletTracer != null) AcceptEntityInput(hBulletTracer, "Kill", "", 0.3);  // Bullet tracer duration
-	if (g_bDebugMode) Mark(vecPos, 3.0);
+	// Immediate cleanup with very short timers to prevent entity buildup
+	AcceptEntityInput(hShootFire, "Kill", "", 0.02);  // Very fast cleanup
+	if (hSmokeTrail != null) AcceptEntityInput(hSmokeTrail, "Kill", "", 0.3);  // Quick smoke cleanup
+	if (hBulletTracer != null) AcceptEntityInput(hBulletTracer, "Kill", "", 0.1);  // Very fast tracer cleanup
+	if (hLaserSight != null) AcceptEntityInput(hLaserSight, "Kill", "", 0.1);  // Very fast laser cleanup
+	
+	if (g_bDebugMode) Mark(vecPos, 1.0);  // Reduced debug mark duration
 }
 
 function TurretShootFakeImpact(turret, hEntity, vecPos)
@@ -1374,145 +1310,161 @@ function GetEntityPosition(hEntity, sClass)
 	return vecPos;
 }
 
+// Optimized shared targeting cache function with target distribution
+function BuildSharedTargetCache()
+{
+	local currentTime = Time();
+
+	// Only rebuild cache if interval has passed
+	if (currentTime - g_flTargetCacheTime < g_flTargetCacheInterval && g_aTargetCache.len() > 0)
+	{
+		return; // Use existing cache
+	}
+
+	g_aTargetCache.clear();
+	g_flTargetCacheTime = currentTime;
+
+	// Pre-calculate target data for all potential targets
+	foreach (idx, hEntity in g_aPotentialTargets)
+	{
+		if (!hEntity || !hEntity.IsValid() || hEntity.GetHealth() <= 0)
+		{
+			continue;
+		}
+
+		local vecPos = GetEntityPosition(hEntity, hEntity.GetClassname());
+		if (!vecPos) continue;
+
+		// Count how many turrets are already targeting this entity
+		local targetingCount = 0;
+		foreach (turret in g_aTurretList)
+		{
+			if (turret.m_hTarget == hEntity)
+			{
+				targetingCount++;
+			}
+		}
+
+		// Store target info in cache with targeting count for distribution
+		g_aTargetCache.push({
+			entity = hEntity,
+			position = vecPos,
+			classname = hEntity.GetClassname(),
+			targetingCount = targetingCount
+		});
+	}
+
+	// Sort cache by targeting count (prefer less targeted entities)
+	// Secondary sort by distance for entities with same targeting count
+	g_aTargetCache.sort(function(a, b) {
+		if (a.targetingCount != b.targetingCount)
+			return a.targetingCount <=> b.targetingCount;
+
+		// If same targeting count, calculate distances and prefer closer targets
+		// Note: This is a rough calculation for sorting purposes only
+		local distA = (a.position - Vector(0, 0, 0)).LengthSqr(); // Rough center-based distance
+		local distB = (b.position - Vector(0, 0, 0)).LengthSqr();
+		return distA <=> distB;
+	});
+
+	if (ShouldShowDebugMessage() && g_aTargetCache.len() > 0)
+	{
+		print("BuildSharedTargetCache: Sorted " + g_aTargetCache.len() + " targets by targeting priority\n");
+		foreach (idx, target in g_aTargetCache)
+		{
+			if (idx < 3) // Show first 3 targets for debugging
+			{
+				print("  [" + idx + "] " + target.classname + " - targeting count: " + target.targetingCount + "\n");
+			}
+		}
+	}
+}
+
 function GetNearestEntity(hTracerEntity, hMachineGun)
 {
-	local length = g_aPotentialTargets.len();
-	local flDistanceSqr = GetConVarFloat(g_ConVar_TurretRange) * GetConVarFloat(g_ConVar_TurretRange);
-	local hEntity = null;
-	local vecPos = null;
-	local hTarget = null;
-	local vecPosTemp = null;
-	local flDistanceSqrTemp = 0;
+	// Use shared cache instead of recalculating for each turret
+	BuildSharedTargetCache();
 
-	// Early return if no potential targets
-	if (length == 0)
+	local flMaxRangeSqr = GetConVarFloat(g_ConVar_TurretRange) * GetConVarFloat(g_ConVar_TurretRange);
+	local hTarget = null;
+	local vecPos = null;
+
+	// Early return if no cached targets
+	if (g_aTargetCache.len() == 0)
 	{
 		if (ShouldShowDebugMessage())
-	{
-		print("GetNearestEntity: No potential targets available\n");
-	}
+		{
+			print("GetNearestEntity: No cached targets available\n");
+		}
 		return { target = null, position = null };
 	}
 
 	if (ShouldShowDebugMessage())
 	{
-		print("GetNearestEntity: Searching through " + length + " potential targets\n");
+		print("GetNearestEntity: Searching through " + g_aTargetCache.len() + " cached targets (sorted by targeting priority)\n");
 	}
 
-	// Use reverse iteration to safely remove elements during iteration
-	for (local idx = length - 1; idx >= 0; idx--)
+	// Iterate through cached targets (already sorted by targeting count - less targeted first)
+	foreach (cachedTarget in g_aTargetCache)
 	{
 		try
 		{
-			// Get entity from potential targets (reverse iteration is safe)
-			hEntity = g_aPotentialTargets[idx];
-			if (hEntity && hEntity.IsValid())
+			local hEntity = cachedTarget.entity;
+			local vecPosTemp = cachedTarget.position;
+
+			// Skip entities that are already being targeted by too many turrets
+			if (cachedTarget.targetingCount >= g_iMaxTurretsPerTarget)
 			{
-				// Validate entity health and status
-				if (hEntity.IsPlayer())
+				if (ShouldShowDebugMessage())
 				{
-					// Comprehensive validation for special infected
-					// Safe NetProps access with try-catch
-					local observerMode = 0;
-					local isGhost = 0;
-					try {
-						if (NetProps.HasProp(hEntity, "m_iObserverMode"))
-							observerMode = NetProps.GetPropInt(hEntity, "m_iObserverMode");
-						if (NetProps.HasProp(hEntity, "m_isGhost"))
-							isGhost = NetProps.GetPropInt(hEntity, "m_isGhost");
-					} catch (e) {
-						// NetProps access failed, assume safe defaults
-					}
-					if (hEntity.IsIncapacitated() ||
-					    hEntity.GetHealth() < 1 ||
-					    hEntity.IsDead() ||
-					    observerMode != 0 ||
-					    isGhost != 0)
+					print("GetNearestEntity: Skipping over-targeted entity " + cachedTarget.classname + " (" + cachedTarget.targetingCount + "/" + g_iMaxTurretsPerTarget + ")\n");
+				}
+				continue;
+			}
+
+			// Check if entity is within range
+			local flDistanceSqrTemp = (hEntity.GetOrigin() - hTracerEntity.GetOrigin()).LengthSqr();
+			if (flDistanceSqrTemp <= flMaxRangeSqr)
+			{
+				// Check angle and visibility
+				if (GetAngleBetweenEntities(hTracerEntity, hEntity) <= GetConVarFloat(g_ConVar_TurretAngle))
+				{
+					if (IsCanSeeEntity(hTracerEntity, hEntity, hMachineGun, vecPosTemp))
 					{
+						// Found first valid target - prioritize distribution over distance
+						hTarget = hEntity;
+						vecPos = vecPosTemp;
+
 						if (ShouldShowDebugMessage())
-				{
-					print("GetNearestEntity: Removing invalid player: Type=" + hEntity.GetZombieType() +
-					      " IsDead=" + hEntity.IsDead() +
-					      " Health=" + hEntity.GetHealth() +
-					      " ObserverMode=" + observerMode +
-					      " IsGhost=" + isGhost + "\n");
-				}
-						g_aPotentialTargets.remove(idx);
-						continue;
-					}
-				}
-				else if (hEntity.GetHealth() < 1)
-				{
-					if (ShouldShowDebugMessage())
-				{
-					print("GetNearestEntity: Removing dead entity: " + hEntity.GetClassname() + "\n");
-				}
-					g_aPotentialTargets.remove(idx);
-					continue;
-				}
-
-				// Check distance
-				flDistanceSqrTemp = (hEntity.GetOrigin() - hTracerEntity.GetOrigin()).LengthSqr();
-				if (flDistanceSqrTemp < flDistanceSqr)
-				{
-					// Get entity position
-					vecPosTemp = GetEntityPosition(hEntity, hEntity.GetClassname());
-					if (hEntity && hEntity.IsValid() && vecPosTemp)
-					{
-						// Check angle and visibility
-						if (GetAngleBetweenEntities(hTracerEntity, hEntity) <= GetConVarFloat(g_ConVar_TurretAngle))
 						{
-							if (IsCanSeeEntity(hTracerEntity, hEntity, hMachineGun, vecPosTemp))
-							{
-								flDistanceSqr = flDistanceSqrTemp;
-								hTarget = hEntity;
-								vecPos = vecPosTemp;
-
-								if (ShouldShowDebugMessage())
-					{
-						print("GetNearestEntity: Found valid target " + hEntity.GetClassname() + " at distance " + sqrt(flDistanceSqrTemp) + "\n");
-					}
-							}
-							else if (ShouldShowDebugMessage())
-				{
-					print("GetNearestEntity: Cannot see entity " + hEntity.GetClassname() + "\n");
-				}
+							print("GetNearestEntity: Selected target " + cachedTarget.classname + " (targeting count: " + cachedTarget.targetingCount + ", distance: " + sqrt(flDistanceSqrTemp) + ")\n");
 						}
-						else if (ShouldShowDebugMessage())
-				{
-					print("GetNearestEntity: Entity " + hEntity.GetClassname() + " outside of angle limit\n");
-				}
+
+						// Return immediately to prioritize target distribution
+						break;
 					}
 					else if (ShouldShowDebugMessage())
-			{
-				print("GetNearestEntity: Failed to get position for " + hEntity.GetClassname() + "\n");
-			}
+					{
+						print("GetNearestEntity: Cannot see entity " + cachedTarget.classname + "\n");
+					}
 				}
 				else if (ShouldShowDebugMessage())
-		{
-			print("GetNearestEntity: Entity " + hEntity.GetClassname() + " outside of range\n");
-		}
+				{
+					print("GetNearestEntity: Entity " + cachedTarget.classname + " outside of angle limit\n");
+				}
 			}
-			else
+			else if (ShouldShowDebugMessage())
 			{
-				// Remove invalid entity
-				if (ShouldShowDebugMessage())
-			{
-				print("GetNearestEntity: Removing invalid entity at index " + idx + "\n");
-			}
-				g_aPotentialTargets.remove(idx);
-				continue;
+				print("GetNearestEntity: Entity " + cachedTarget.classname + " outside of range (" + sqrt(flDistanceSqrTemp) + " > " + sqrt(flMaxRangeSqr) + ")\n");
 			}
 		}
 		catch (error)
 		{
 			if (ShouldShowDebugMessage())
-		{
-			print("Error in GetNearestEntity: " + error + "\n");
-		}
-
-			// Remove invalid entity
-			g_aPotentialTargets.remove(idx);
+			{
+				print("Error in GetNearestEntity: " + error + "\n");
+			}
+			// Skip this cached target on error
 			continue;
 		}
 	}
@@ -1521,9 +1473,9 @@ function GetNearestEntity(hTracerEntity, hMachineGun)
 	if (hTarget == null || vecPos == null)
 	{
 		if (ShouldShowDebugMessage())
-	{
-		print("GetNearestEntity: No valid target found within range and angle\n");
-	}
+		{
+			print("GetNearestEntity: No valid target found within range and angle\n");
+		}
 	}
 	else if (ShouldShowDebugMessage())
 	{
@@ -2022,7 +1974,7 @@ function Turret_Think()
 
 								// Smooth rotation towards target (increased speed for better responsiveness)
 							// Safety check to prevent division by zero or invalid rotation speed
-							local rotationSpeed = (GnomeTurretRotationSpeed > 0) ? (GnomeTurretRotationSpeed / 100.0) : 0.01;
+							local rotationSpeed = (GnomeTurretRotationSpeed > 0) ? (GnomeTurretRotationSpeed / 250.0) : 0.01;
 								local newAngles = QAngle(
 									turret.m_eCurrentAngles.x + (targetAngles.x - turret.m_eCurrentAngles.x) * rotationSpeed,
 									turret.m_eCurrentAngles.y + (targetAngles.y - turret.m_eCurrentAngles.y) * rotationSpeed,
@@ -2152,20 +2104,35 @@ function Turret_Think()
 						sayf("[Turret Debug] Invalid entity index for camera angles reset: %d (array size: %d)", entityIndex, g_bAllowChangeCameraAngles.len());
 					}
 
-							// Explosive effects
-			if (GnomeTurretExplosiveMode && tbl["target"] && tbl["target"].IsValid()) // Removed demolition mode
+							// OPTIMIZED Explosive effects - reduced frequency to prevent crashes
+			// Only trigger explosions every 5th shot to prevent entity overflow
+			if (GnomeTurretExplosiveMode && tbl["target"] && tbl["target"].IsValid() && RandomInt(1, 5) == 1)
 			{
-				NetProps.SetPropEntity(ExplosionEntity, "m_hOwnerEntity", turret.m_hOwner);
-				ExplosionEntity.SetOrigin(tbl["target"].GetOrigin());
-				DoEntFire("!self", "Explode", "", 0, turret.m_hOwner, ExplosionEntity);
-
+				// Create a simple impact effect instead of full explosion for most shots
+				local hExplosiveImpact = SpawnEntityFromTable("info_particle_system", {
+					effect_name = eTurret.ImpactExplosive
+					origin = tbl["target"].GetOrigin()
+					start_active = 1
+				});
+				AcceptEntityInput(hExplosiveImpact, "Kill", "", 0.1);
+				
+				// Apply stagger effect without full explosion
 				if (tbl["target"].GetClassname() == "player")
 				{
 					if (tbl["target"].GetZombieType() <= 8)
 					{
-						tbl["target"].Stagger(Vector(RandomInt(10,30), RandomInt(10,30), 0));
+						tbl["target"].Stagger(Vector(RandomInt(5,15), RandomInt(5,15), 0));
 					}
 				}
+			}
+			// Full explosion only on rare occasions with global cooldown to prevent crashes
+			else if (GnomeTurretExplosiveMode && tbl["target"] && tbl["target"].IsValid() && 
+			         RandomInt(1, 50) == 1 && (Time() - g_flLastExplosionTime) >= g_flExplosionCooldown)
+			{
+				NetProps.SetPropEntity(ExplosionEntity, "m_hOwnerEntity", turret.m_hOwner);
+				ExplosionEntity.SetOrigin(tbl["target"].GetOrigin());
+				DoEntFire("!self", "Explode", "", 0, turret.m_hOwner, ExplosionEntity);
+				g_flLastExplosionTime = Time(); // Update cooldown timer
 			}
 
 							TurretDataSaveTimer = Time();
@@ -2609,16 +2576,85 @@ function ShowTurretHelp(hPlayer)
 	sayf("!turret_damage <1-1000> - Damage per shot");
 	sayf("!turret_rotation <45-359> - Rotation speed (realistic aim only)");
 	sayf("!turret_aim <0/1> - 0=Aimbot, 1=Realistic aim");
+	sayf("!turret_maxcount <1-50> - Set server-wide turret limit");
+	sayf("!turret_maxtargets <1-%d> - Max turrets per target (performance)", GnomeTurretMaxCount);
 	sayf("!turret_debug <0/1> - Toggle detailed debug mode");
 	sayf("!turret_debug_interval <0.5-10.0> - Debug message interval in seconds");
 	sayf("=== CURRENT SETTINGS ===");
-	sayf("Ammo: %d | Type: %d | Think: %dms | FireRate: %dms",
-		GnomeTurretAmmoBase,
+	sayf("Turrets: %d/%d | Ammo: %d | Type: %d | Think: %dms | FireRate: %dms",
+		g_aTurretList.len(), GnomeTurretMaxCount, GnomeTurretAmmoBase,
 		(GnomeTurretExplosiveMode ? 2 : (GnomeTurretFireEnabled ? 1 : 0)), // Demolition removed
 		GnomeTurretThinkRateMS, GnomeTurretFireRateMS);
-	sayf("Range: %.0f | Damage: %d | Rotation: %.1f | Aim: %d | Debug: %d",
+	sayf("Range: %.0f | Damage: %d | Rotation: %.1f | Aim: %d | MaxTargets: %d",
 		GnomeTurretRange, GnomeTurretDamage, GnomeTurretRotationSpeed,
-		GnomeTurretAimMode, GnomeTurretDebugMode);
+		GnomeTurretAimMode, g_iMaxTurretsPerTarget);
+	sayf("Debug: %d | Cache Interval: %.0fms", GnomeTurretDebugMode, g_flTargetCacheInterval * 1000);
+}
+
+function SetTurretMaxCount(hPlayer, sValue)
+{
+	if (!hPlayer || !hPlayer.IsValid())
+		return;
+
+	local iValue = sValue.tointeger();
+	if (iValue < 1 || iValue > 50)
+	{
+		sayf("Invalid turret limit. Must be between 1 and 50.");
+		return;
+	}
+
+	local iOldLimit = GnomeTurretMaxCount;
+	GnomeTurretMaxCount = iValue;
+
+	sayf("Server turret limit changed from %d to %d (takes effect immediately)", iOldLimit, GnomeTurretMaxCount);
+
+	// If new limit is lower than current turret count, inform about excess turrets
+	local iTotalTurrets = g_aTurretList.len();
+	if (iTotalTurrets > GnomeTurretMaxCount)
+	{
+		sayf("Warning: %d turrets currently active, exceeding new limit of %d", iTotalTurrets, GnomeTurretMaxCount);
+		sayf("No new turrets can be deployed until count drops to %d or below", GnomeTurretMaxCount);
+	}
+	else
+	{
+		sayf("Current turrets: %d/%d", iTotalTurrets, GnomeTurretMaxCount);
+	}
+
+	if (GnomeTurretDebugMode)
+	{
+		printl("[CONFIG] Set GnomeTurretMaxCount to " + GnomeTurretMaxCount);
+	}
+
+	// Save the new setting to config file
+	SaveCurrentTurretSettings();
+}
+
+function SetMaxTurretsPerTarget(hPlayer, sValue)
+{
+	if (!hPlayer || !hPlayer.IsValid())
+		return;
+
+	local iValue = sValue.tointeger();
+	if (iValue < 1 || iValue > GnomeTurretMaxCount)
+	{
+		sayf("Invalid max turrets per target. Must be between 1 and %d.", GnomeTurretMaxCount);
+		return;
+	}
+
+	local iOldValue = g_iMaxTurretsPerTarget;
+	g_iMaxTurretsPerTarget = iValue;
+
+	sayf("Max turrets per target changed from %d to %d (improves performance)", iOldValue, g_iMaxTurretsPerTarget);
+	sayf("This prevents multiple turrets from targeting the same entity simultaneously.");
+
+	if (GnomeTurretDebugMode)
+	{
+		printl("[CONFIG] Set g_iMaxTurretsPerTarget to " + g_iMaxTurretsPerTarget);
+	}
+
+	// Force cache rebuild to apply new targeting limits
+	g_flTargetCacheTime = 0.0;
+	g_aTargetCache.clear();
 }
 
 function AdditionalClassMethodsInjected()
@@ -2635,6 +2671,8 @@ function AdditionalClassMethodsInjected()
 	RegisterChatCommand("!turret_damage", SetTurretDamage, true, true);
 	RegisterChatCommand("!turret_rotation", SetTurretRotationSpeed, true, true);
 	RegisterChatCommand("!turret_aim", SetTurretAimMode, true, true);
+	RegisterChatCommand("!turret_maxcount", SetTurretMaxCount, true, true);
+	RegisterChatCommand("!turret_maxtargets", SetMaxTurretsPerTarget, true, true);
 
 	// ALL OTHER COMMANDS DISABLED:
 	// RegisterChatCommand("!debugmode", ToggleDebugMode, true);
@@ -2919,9 +2957,11 @@ function LoadSpecificConfigFile(filename)
 					GnomeTurretRotationSpeed = togglevalue.tofloat();
 				}
 				if(togglecommand == "GnomeTurretMaxCount")
-				{
-					GnomeTurretMaxCount = togglevalue.tointeger();
-				}
+			{
+				local iOldValue = GnomeTurretMaxCount;
+				GnomeTurretMaxCount = togglevalue.tointeger();
+				printl("[CONFIG] Set GnomeTurretMaxCount from " + iOldValue + " to " + GnomeTurretMaxCount);
+			}
 				// DISABLED - Demolition mode removed
 		// if(togglecommand == "GnomeTurretDemolitionMode")
 		// {

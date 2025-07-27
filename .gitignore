@@ -1,0 +1,126 @@
+# L4D2 Gnome Turret Refactor - Git Ignore File
+
+# ===== L4D2 Game Files =====
+# Exclude L4D2 game installation files
+left4dead2/
+bin/
+*.exe
+*.dll
+
+# L4D2 crash dumps and logs
+*.mdmp
+*.dmp
+hl2_*.txt
+console.log
+
+# VPK files (compiled addons)
+*.vpk
+
+# ===== Development Files =====
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Backup files
+*.bak
+*.backup
+backup_*
+*_backup.*
+
+# Editor files
+.vscode/
+*.sublime-*
+*.swp
+*.swo
+
+# ===== System Files =====
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Linux
+*~
+.nfs*
+
+# ===== Archive Files =====
+# Compressed archives
+*.rar
+*.zip
+*.7z
+*.tar.gz
+*.tar.bz2
+
+# ===== Configuration Files =====
+# Generated config files (these are auto-generated)
+gnome_turret_config.cfg
+turret_settings.cfg
+
+# User-specific settings
+user_config.cfg
+local_settings.cfg
+
+# ===== Documentation Build Files =====
+# Generated documentation
+docs/_build/
+docs/html/
+docs/latex/
+
+# ===== IDE and Tool Files =====
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+
+# ===== Logs and Debug Files =====
+# Debug output
+debug.log
+*.log
+trace.txt
+
+# Performance profiling
+profile_*.txt
+perf_*.log
+
+# ===== Test Files =====
+# Test outputs
+test_results/
+test_*.cfg
+benchmark_*.txt
+
+# ===== Miscellaneous =====
+# Node modules (if any web tools are used)
+node_modules/
+
+# Python cache (if any Python tools are used)
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary directories
+tmp/
+temp/
+
+# ===== Keep These Files =====
+# Force include important files that might be ignored by patterns above
+!gnome-turret/
+!gnome-turret/**
+!*.nut
+!*.md
+!LICENSE
+!.gitignore
+!.agent.md

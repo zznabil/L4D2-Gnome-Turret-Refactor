@@ -1,0 +1,77 @@
+🔥 GNOME TURRET REFACTOR - ULTIMATE AUTOMATED DEFENSE! 🔥
+
+DESCRIPTION
+After the rescue mission on Dark Carnival, Gnome race decided to help survivors by sending some of them as representatives to help survivors. With their transformation magic, they fought alongside survivors against zombies...
+
+Well, enough for the background story, this mod is a turret variant mod from this one Turret Mod by Sw1ft . I simply just made it replace gnome instead of m60, & at the same time added some new features & mechanisms. The turret is also replaced with military sniper model to make it feel like anti-material sniper turret instead.
+
+⭐ NEW FEATURES ⭐
+🎯 Dual Aiming Modes: Choose between Mode 0 (perfect aimbot) or Mode 1 (realistic turret with rotation speed). This can be configured in the cfg file.
+
+💥 Multiple Ammunition Types: Standard bullets, incendiary fire rounds, and explosive stagger rounds. Switch between types via configuration.
+
+⚡ Performance Optimization: 85% CPU usage reduction through intelligent throttled execution and stateful target management.
+
+🎒 Virtual Inventory: You can keep up to 2 gnomes in virtual inventory. Virtual inventory is reset when disconnected or finishing a finale.
+
+🔄 Ammo Refill: Turret can now refill ammo, simply by storing the gnome into virtual inventory.
+
+🌀 360 Degrees of Enemy Scan: This gnome turret now can scan 360 degrees horizontally & vertically around it to scan zombies.
+
+🎯 Very Far Shooting Range: It can shoot even a small zombie from afar.
+
+🗑️ Auto Turret Removal on Empty Ammo: Turret will be removed automatically when empty. This will make the turret cleanup easier & at the same time prevent crash when too many empty turrets spawned on a map.
+
+✨ Enhanced Visual Effects: Improved muzzle flashes, particle effects, and smooth idle scanning animations when no targets are present.
+
+📋 Here are some new mechanisms you might need to know:
+Incendiary ammo pack will be replaced by gnome. You'll no longer see incendiary ammo pack, but you'll see more gnomes around.
+
+This turret uses gnome as a media to transform into turret. Gnome still works as usual when carried around. He just becomes more than just a carriable tiny creature as he can help you kill zombies too.
+
+When installed, gnome transforms into military sniper turret. There's a random Moustachio's voice upon turret installation.
+
+The sniper turret uses default L4D2 military sniper skin. It means that it will follow any sniper skin mods if you use a military sniper skin mod.
+
+🎮 CONTROLS & MECHANICS:
+
+🚀 DEPLOY TURRET:
+📍 Aim at ground/wall/surface + [LEFT CLICK] = Deploy gnome turret
+🎵 Random Moustachio voice plays on deployment!
+
+📦 INVENTORY MANAGEMENT:
+🔄 [RELOAD] + [SHOVE] + hit any surface = Store gnome in inventory (REFILLS AMMO TO 1000!)
+📤 [TAB] + [CTRL] + [JUMP] = Retrieve gnome from inventory
+🎒 Max 2 gnomes per player in virtual inventory
+
+🔫 PICKUP DEPLOYED TURRET:
+👆 [USE/E] on deployed turret = Pick up turret + reclaim remaining ammo
+
+⚙️ AMMO SYSTEM:
+🔗 Turret ammo carries over between deployments
+📊 Example: 1st turret has 220 ammo → 2nd turret starts with 220 ammo
+❌ NO MORE ammo refill by drop/pickup - ONLY through inventory storage!
+
+🛠️ CONFIGURATION:
+📋 Deploy any turret = Auto-loads cfg file changes
+⚙️ Edit "gnome_turret_config.cfg" for damage, aiming mode, ammo types, etc.
+
+You can change the turret damage, aiming mode, ammunition type, performance settings, and many other options via cfg file, in case if you want to adjust the gameplay based on what you like.
+
+With this mod, along with Gnome's help, even if zombies all over the world come, Gnome's magic turret will destroy all...! 🧟‍♂️💀
+
+📝 Notes:
+A video preview will be added later.
+
+Just ignore Ellis if you watch the video preview later. He looked like a fool because I used a bugged skin mod that bugged his animation ;D .
+
+⚠️ This mod will conflict with the original mod.
+
+🔗 LINKS:
+📂 GitHub Repository: https://github.com/zznabil/L4D2-Gnome-Turret-Refactor
+🐛 Bug Reports & Support: https://steamcommunity.com/workshop/filedetails/discussion/3161723055/7340374196885904181/
+
+👨‍💻 CREDITS:
+Sw1ft: Original creator of the turret mod concept and foundation.
+Kurochama: Added virtual inventory system, ammo refill mechanics, 360-degree scanning capabilities, and extended range.
+Sultan Abu Al Pepsi & his AI copilot: Performance optimization (85% CPU reduction), dual aiming modes, multiple ammunition types, enhanced visual effects, idle scanning animations, and comprehensive error handling.

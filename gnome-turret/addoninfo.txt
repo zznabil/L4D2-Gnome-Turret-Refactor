@@ -1,0 +1,22 @@
+"Addoninfo"
+{
+	addontitle				"L4D2 Gnome Turret Refactor"
+	addonversion			"3.0"
+	addondescription		"Advanced gnome-to-turret transformation system with evolutionary development: Original concept by Sw1ft, expanded by Kurochama (inventory system, ammo refill, 360-degree scanning, extended range), and optimized by Sultan & AI Copilot (idle animations, 85% performance boost, dual aiming modes, ammunition types, visual effects). Features intelligent AI targeting, configurable settings, line-of-sight validation, and supports up to 8 concurrent turrets with minimal server impact."
+	addonauthor				"Sw1ft, Kurochama, Sultan & AI Copilot"
+	addonauthorsteamid		"https://steamcommunity.com/id/alkashproduction"
+	addonsteamappid			550
+	addoncontent_script		1
+	addonurl0				"https://github.com/zznabil/L4D2-Gnome-Turret-Refactor"
+	addonurlname0			"GitHub Repository"
+	addonurl1				"https://github.com/zznabil/L4D2-Gnome-Turret-Refactor/wiki"
+	addonurlname1			"Documentation Wiki"
+	addonurl2				"https://github.com/zznabil/L4D2-Gnome-Turret-Refactor/issues"
+	addonurlname2			"Bug Reports & Support"
+	addonurl3				"https://steamcommunity.com/id/kurochamaw"
+	addonurlname3			"Kurochama's Profile"
+	addonurl4				"https://steamcommunity.com/id/sultanabualpepsi"
+	addonurlname4			"Sultan's Profile"
+	addontags				"turret;gnome;sentry;automated;AI;targeting;performance;vscript;squirrel;collaborative"
+	addonhidden				0
+}

@@ -1,0 +1,1 @@
+SpawnEntityFromTable("env_soundscape_triggerable", { vscripts = "gnome_turret_trigger" });

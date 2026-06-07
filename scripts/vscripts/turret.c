@@ -528,6 +528,7 @@ function ToggleLaser(hPlayer)
 		g_bLaserEnabled = !g_bLaserEnabled;
 		ShowSpecialHint(hPlayer, "Laser sight: " + (g_bLaserEnabled ? "ON" : "OFF"), LampIcon, 0.1, 3);
 		printl("[Turret] Laser toggled " + (g_bLaserEnabled ? "ON" : "OFF") + " by " + hPlayer.GetPlayerName());
+		GenerateGnomeTurretCfgFile();
 	}
 }
 
@@ -1317,6 +1318,7 @@ function PrintTurretHelp(hPlayer, sValue)
 		local val = strip(split(sValue, " ")[0]).tointeger();
 		g_iMaxTurrets = (val < 0) ? 0 : ((val > 32) ? 32 : val);
 		sayf("* Turret limit set to %d", g_iMaxTurrets);
+		GenerateGnomeTurretCfgFile();
 		return;
 	}
 	sayf("* === Turret Commands ===");

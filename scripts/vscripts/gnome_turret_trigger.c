@@ -92,13 +92,15 @@ function GenerateGnomeTurretCfgFile()
 	
 	local CfgToggleFile =
 	[
-		"DemolitionShot 1",
-		"g_bDemolitionMode 1",
-		"GnomeTurretDamage 50",
-		"GnomeTurretAmmoBase 300",
-		"GnomeTurretSweepSpeed 20.0",
-		"GnomeTurretSweepArc 90.0",
-"TurretParticlesEnabled 1",
+		"DemolitionShot " + ::DemolitionShot,
+		"g_bDemolitionMode " + (::g_bDemolitionMode ? 1 : 0),
+		"GnomeTurretDamage " + ::GnomeTurretDamage,
+		"GnomeTurretAmmoBase " + ::GnomeTurretAmmoBase,
+		"GnomeTurretSweepSpeed " + ::g_flGnomeTurretSweepSpeed,
+		"GnomeTurretSweepArc " + ::g_flGnomeTurretSweepArc,
+		"TurretParticlesEnabled " + ::g_bTurretParticlesEnabled,
+		"LaserEnabled " + (::g_bLaserEnabled ? 1 : 0),
+		"MaxTurrets " + ::g_iMaxTurrets,
 		".",
 		".",
 		"// ====== TOGGLE SETTING INFO ======",
@@ -129,13 +131,7 @@ function GenerateGnomeTurretCfgFile()
 	{
 		DefaultToggleFile = DefaultToggleFile + line + "\n";
 	}
-	if(!CfgFileCheck("gnome turret/gnome turret.txt"))
-	{
-		
-		StringToFile("gnome turret/gnome turret.txt", DefaultToggleFile);
-		printl("The 'gnome turret.txt' file can't be found. Generating a new 'gnome turret.txt' file...");
-		
-	}
+	StringToFile("gnome turret/gnome turret.txt", DefaultToggleFile);
 	
 }
 function GenerateGnomeVirtualInventory()
@@ -338,6 +334,14 @@ function LoadSpecificConfigFile(filename)
 				{
 					g_bTurretParticlesEnabled = togglevalue.tointeger();
 				}
+			if(togglecommand == 'LaserEnabled')
+			{
+				::g_bLaserEnabled <- togglevalue.tointeger() > 0;
+			}
+			if(togglecommand == 'MaxTurrets')
+			{
+				::g_iMaxTurrets <- togglevalue.tointeger();
+			}
 				if(togglecommand == "GnomeTurretAmmoNick")
 				{
 					GnomeTurretAmmoNick = togglevalue.tointeger();

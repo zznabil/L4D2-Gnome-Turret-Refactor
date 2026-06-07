@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Bullet tracer with `Line()` DebugDrawLine (white-yellow, 0.05s) from muzzle to occlusion point
 - Entity pool system: pre-spawned ring buffer for impact particles and shoot sounds
 - `.gitignore`, MIT `LICENSE`, professional `README.md`
+- Config persistence: all host settings (`!ts`, `!tarc`, `!tde`, `!tl`, `!thelp`) now write back to `gnome turret.txt` and survive map changes, death, redeployment
+- `LaserEnabled` and `MaxTurrets` keys added to `gnome turret.txt` config file read/write cycle
 
 ### Changed
 - Explosive ammo VFX + stagger gated by `turret.m_iDamageType == DMG_STUMBLE` instead of `g_bDemolitionMode || ExplosionAmmoToggle` — fixes explosive ammo having no VFX or stagger when demolition toggle is off

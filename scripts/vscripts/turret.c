@@ -1106,20 +1106,8 @@ if (g_iTurretCount < 0) g_iTurretCount = 0;
 						TurretShoot(hMachineGun, turret);
 						TurretShootFakeImpact(turret, tbl["target"], tbl["position"]);
 						local vecMuzzle = hMachineGun.GetOrigin() + hMachineGun.GetAngles().Up() * 4 + hMachineGun.GetAngles().Forward() * 38;
-						if (g_bTurretParticlesEnabled)
-						{
-							local hTracer = SpawnEntityFromTable("info_particle_system", {
-								effect_name = "weapon_tracers_50cal"
-								origin = vecMuzzle
-								angles = Vector(hMachineGun.GetAngles().x, hMachineGun.GetAngles().y, hMachineGun.GetAngles().z)
-								start_active = 1
-							});
-							if (hTracer)
-							{
-								AcceptEntityInput(hTracer, "Stop", "", 0.1);
-								DoEntFire("!self", "Kill", "", 0.5, hTracer, hTracer);
-							}
-						}
+						local traceEnd = DoTraceLine(vecMuzzle, (tbl["position"] - vecMuzzle).Normalize(), eTrace.Type_Pos, GetConVarFloat(g_ConVar_TurretRange), eTrace.Mask_Shot, null);
+						Line(vecMuzzle, traceEnd, 0.05, 255, 220, 100);
 
 						PlayShootSound(turret.m_hTracerEntity.GetOrigin());
 

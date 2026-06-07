@@ -1,0 +1,34 @@
+# Editor / IDE
+.serena/
+.trae/
+.idea/
+.vs/
+.vscode/
+*.swp
+*.swo
+
+# Build output
+dist/
+*.vpk
+
+# Generated source (game loads .nut; edit .c only)
+*.nut
+
+# OpenCode work tracking (keep boulder.json and active plans)
+.omo/run-continuation/
+.omo/evidence/
+.omo/drafts/
+
+# Knowledge graph (regenerated per run)
+graphify-out/
+
+# OS artifacts
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Logs
+*.log
+
+# Project-specific
+vpk.exe*.lnk

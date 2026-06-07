@@ -1,0 +1,15 @@
+{
+  "active_plan": "D:\\SteamLibrary\\steamapps\\common\\Left 4 Dead 2\\turret\\.omo\\plans\\turret-feature-overhaul.md",
+  "started_at": "2026-06-06T18:48:00.000Z",
+  "ended_at": "2026-06-06T19:05:00.000Z",
+  "session_ids": [
+    "opencode:ses_161d2e0d2ffeIs70V1Nt6y19JU"
+  ],
+  "plan_name": "turret-feature-overhaul",
+  "status": "completed",
+  "schema_version": 2,
+  "session_origins": {
+    "opencode:ses_161d2e0d2ffeIs70V1Nt6y19JU": "direct"
+  },
+  "task_sessions": {}
+}

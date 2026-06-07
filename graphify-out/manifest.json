@@ -1,0 +1,197 @@
+{
+  ".omo/boulder.json": {
+    "mtime": 1780679614.9316213,
+    "ast_hash": "809f12698dc877c8408d09a889534ca5",
+    "semantic_hash": ""
+  },
+  ".omo/run-continuation/ses_168b3bf4dffezvV5nGNh2ncy4O.json": {
+    "mtime": 1780656329.2201023,
+    "ast_hash": "8209830e34019044b3dd4c8fb0983191",
+    "semantic_hash": ""
+  },
+  "scripts/vscripts/gnome_turret_trigger.c": {
+    "mtime": 1780672060.3704195,
+    "ast_hash": "59ab5be6a3ab6ff7c398d7911cef5396",
+    "semantic_hash": ""
+  },
+  "scripts/vscripts/lib_utils.c": {
+    "mtime": 1780496637.3404384,
+    "ast_hash": "79931dffc8554dc591dd2aadd2c4334a",
+    "semantic_hash": ""
+  },
+  "scripts/vscripts/mapspawn_addon.c": {
+    "mtime": 1780496637.3404384,
+    "ast_hash": "1f34146f4557b1cb24b02edaba056220",
+    "semantic_hash": ""
+  },
+  "scripts/vscripts/sm_utilities.c": {
+    "mtime": 1780670601.8425684,
+    "ast_hash": "26b2e333a8198215767f1b470b2da961",
+    "semantic_hash": ""
+  },
+  "scripts/vscripts/turret.c": {
+    "mtime": 1780732206.55883,
+    "ast_hash": "e9558cd5ef896b459957ba546707eb1e",
+    "semantic_hash": ""
+  },
+  "tools/build_vpk.ps1": {
+    "mtime": 1780630590.0412161,
+    "ast_hash": "5f7e37dde1a3c8839decbe562cea95d4",
+    "semantic_hash": ""
+  },
+  "tools/c_to_nut.ps1": {
+    "mtime": 1780576051.4937108,
+    "ast_hash": "741e2facb3803ba501a7a883049b1ee6",
+    "semantic_hash": ""
+  },
+  "tools/cleanup_nut.ps1": {
+    "mtime": 1780576051.5380158,
+    "ast_hash": "3746dc9c9e96f06692365f2005ac236b",
+    "semantic_hash": ""
+  },
+  "tools/dev_cycle.ps1": {
+    "mtime": 1780576051.5714433,
+    "ast_hash": "20d6d98933c9930922081535b0dd6151",
+    "semantic_hash": ""
+  },
+  "tools/nut_to_c.ps1": {
+    "mtime": 1780576051.6111505,
+    "ast_hash": "9047458131a87fcb783aface5d1239eb",
+    "semantic_hash": ""
+  },
+  "tools/publish.ps1": {
+    "mtime": 1780576051.6424744,
+    "ast_hash": "dfabc34b4488832ee9169ec7c71d212d",
+    "semantic_hash": ""
+  },
+  ".omo/notepads/fix-orphan-load-chain/learnings.md": {
+    "mtime": 1780656503.252623,
+    "ast_hash": "47498835acb2e8296b7c1343dcd067a9",
+    "semantic_hash": ""
+  },
+  ".omo/notepads/update-agents-md/qa-verification.md": {
+    "mtime": 1780676869.283714,
+    "ast_hash": "6cc9b366d7358fea0bf6fba8acb57eec",
+    "semantic_hash": ""
+  },
+  ".omo/plans/add-turret-idle-sweep.md": {
+    "mtime": 1780658934.3947084,
+    "ast_hash": "f879555ac41148e9553a5aa867d6b013",
+    "semantic_hash": ""
+  },
+  ".omo/plans/fix-downstream-docs.md": {
+    "mtime": 1780677468.3610883,
+    "ast_hash": "26088496403d64d19f24e8d399c8710b",
+    "semantic_hash": ""
+  },
+  ".omo/plans/fix-orphan-load-chain.md": {
+    "mtime": 1780656691.8484416,
+    "ast_hash": "70c20ab54613b5c6288e1045898aa8ec",
+    "semantic_hash": ""
+  },
+  ".omo/plans/fix-turret-brace-mismatch.md": {
+    "mtime": 1780679611.2967322,
+    "ast_hash": "9c33eac54bf9d593ab50b2ff7611e47b",
+    "semantic_hash": ""
+  },
+  ".omo/plans/update-agents-md.md": {
+    "mtime": 1780677122.806571,
+    "ast_hash": "6d6bcdbda40ce00eaf0309db8c8c067b",
+    "semantic_hash": ""
+  },
+  ".serena/project.local.yml": {
+    "mtime": 1780498205.5711763,
+    "ast_hash": "80d87878a5dcaa57ac055afdac265ad1",
+    "semantic_hash": ""
+  },
+  ".serena/project.yml": {
+    "mtime": 1780498205.5610614,
+    "ast_hash": "b9c5b3640777c5ecdc983f8785070afc",
+    "semantic_hash": ""
+  },
+  ".trae/documents/sdlc-and-qa-workflow.md": {
+    "mtime": 1780499338.051221,
+    "ast_hash": "3d4111e4a98630cbb94fc5e2de5ae376",
+    "semantic_hash": ""
+  },
+  ".trae/documents/squirrel-to-c-workaround-scripts.md": {
+    "mtime": 1780500004.5133433,
+    "ast_hash": "58710fdb626c1f82b0eaaf8524e4e38e",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1780729189.5036683,
+    "ast_hash": "31c91d951d74659fb7481cc7f8fd94e3",
+    "semantic_hash": ""
+  },
+  "CHANGELOG.md": {
+    "mtime": 1780499766.030353,
+    "ast_hash": "af4f71c806fcb6a1dadb217f6f260153",
+    "semantic_hash": ""
+  },
+  "RELEASE_NOTES.md": {
+    "mtime": 1780499771.053102,
+    "ast_hash": "c5584509f17565d0af38b952c84dafcf",
+    "semantic_hash": ""
+  },
+  "addoninfo.txt": {
+    "mtime": 1780496637.3419542,
+    "ast_hash": "be459fd9e7fc0e722b6453e9fc6f2c25",
+    "semantic_hash": ""
+  },
+  "docs/FEEDBACK_TEMPLATE.md": {
+    "mtime": 1780499761.810131,
+    "ast_hash": "c4255bca4dc2712ebdb98374ad8142b1",
+    "semantic_hash": ""
+  },
+  "docs/QA_GAUNTLET.md": {
+    "mtime": 1780499748.131865,
+    "ast_hash": "3d79382ed85a0cdfb8eafb5d73a92102",
+    "semantic_hash": ""
+  },
+  "docs/SDLC_AND_QA.md": {
+    "mtime": 1780499721.9593866,
+    "ast_hash": "ae2bed57b42dd78765f75f0069257133",
+    "semantic_hash": ""
+  },
+  "docs/SERENA_LSP_GUIDE.md": {
+    "mtime": 1780499957.8401568,
+    "ast_hash": "99e44668253d70299a392d47cefc4edc",
+    "semantic_hash": ""
+  },
+  "tools/README.md": {
+    "mtime": 1780576051.6671271,
+    "ast_hash": "68e90155a70298ec760299cca99263bf",
+    "semantic_hash": ""
+  },
+  "tools/graphify-detect.ps1": {
+    "mtime": 1780728224.9624374,
+    "ast_hash": "e0573178f2defb14ddedf296e61a6958",
+    "semantic_hash": ""
+  },
+  "tools/graphify-query.ps1": {
+    "mtime": 1780728164.6202927,
+    "ast_hash": "1cd00fea7659f556078f0842c039eeff",
+    "semantic_hash": ""
+  },
+  "tools/graphify-run.ps1": {
+    "mtime": 1780728159.6376038,
+    "ast_hash": "1eb1d034cc8a9ad7d922f4cfb8f4723f",
+    "semantic_hash": ""
+  },
+  "tools/graphify-status.ps1": {
+    "mtime": 1780728173.9370258,
+    "ast_hash": "d78e2def13a628ca1dce36eb261d59ed",
+    "semantic_hash": ""
+  },
+  ".trae/documents/add_turret_laser_plan.md": {
+    "mtime": 1780729347.5919764,
+    "ast_hash": "a893d64b52b52859a708b1e2178ef208",
+    "semantic_hash": ""
+  },
+  "docs/l4d2 particles list.txt": {
+    "mtime": 1780729349.107168,
+    "ast_hash": "4283cc9cc2a9d237f80ad90b747ca267",
+    "semantic_hash": ""
+  }
+}

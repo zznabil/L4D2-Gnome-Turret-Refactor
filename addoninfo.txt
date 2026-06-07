@@ -1,0 +1,10 @@
+"Addoninfo"
+{
+	addontitle				"Gnome Turret Mod"
+	addonversion			"2.0"
+	addondescription		"After the Gnome Rescue Mission on Dark Carnival, gnome race sent some of them as representatives to help survivors fight zombies with their transformation magic."
+	AddonAuthor				"Sw1ft"
+	AddonAuthorSteamID		"http://steamcommunity.com/profiles/76561198397776991"
+	AddonSteamAppID			550
+	AddonContent_Script		1
+}
